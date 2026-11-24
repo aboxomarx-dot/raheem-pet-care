@@ -236,17 +236,35 @@ function renderBkServices() {
   }).join('');
 }
 
+/* اختيار اليوم: أسبوع واحد في كل مرة (7 أيام) مع أسهم للتنقل — بدون تمرير جانبي */
+const BOOK_WEEKS = 3;
 function renderDates() {
-  const base = today(); let html = '';
-  for (let i = 0; i < 21; i++) {
-    const d = addDays(base, i); const iso = toISO(d); const closed = !HOURS[d.getDay()]; const on = bk.date === iso;
-    const top = i === 0 ? t('bk.today') : i === 1 ? t('bk.tomorrow') : fmtDate(d, { weekday: 'short' });
-    html += `<button type="button" data-date="${iso}" ${closed ? 'disabled' : ''} class="shrink-0 w-[76px] py-2.5 rounded-2xl border-2 text-center transition ${closed ? 'opacity-40 cursor-not-allowed border-slate-100' : on ? 'border-brand bg-brand text-white shadow-glow' : 'border-slate-200 hover:border-brand/40'}">
-      <span class="block text-xs font-bold ${on ? 'text-white/90' : 'text-slate-500'}">${top}</span>
-      <span class="block text-2xl font-black leading-tight">${d.getDate()}</span>
-      <span class="block text-xs ${on ? 'text-white/90' : 'text-slate-500'}">${fmtDate(d, { month: 'short' })}</span></button>`;
+  const base = today(); const w = Math.min(Math.max(bk.week || 0, 0), BOOK_WEEKS - 1); bk.week = w;
+  const start = addDays(base, w * 7); const end = addDays(start, 6);
+  const range = start.getMonth() === end.getMonth()
+    ? `${start.getDate()} – ${end.getDate()} ${fmtDate(end, { month: 'long' })}`
+    : `${fmtDate(start, { day: 'numeric', month: 'short' })} – ${fmtDate(end, { day: 'numeric', month: 'short' })}`;
+  const navBtn = (dir, disabled, icon) => `<button type="button" data-week-nav="${dir}" ${disabled ? 'disabled' : ''} aria-label="${dir < 0 ? t('bk.prevWeek') : t('bk.nextWeek')}"
+      class="w-10 h-10 shrink-0 rounded-xl border-2 grid place-items-center transition ${disabled ? 'border-slate-100 text-slate-300 cursor-not-allowed' : 'border-slate-200 text-brand hover:border-brand hover:bg-brand/5'}">
+      <i data-lucide="${icon}" class="w-5 h-5 ltr:rotate-180"></i></button>`;
+  let days = '';
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(start, i); const iso = toISO(d); const closed = !HOURS[d.getDay()]; const on = bk.date === iso;
+    const idx = w * 7 + i;
+    const AR_DAYS = ['أحد', 'إثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+    const top = idx === 0 ? t('bk.today') : idx === 1 ? t('bk.tomorrow') : (LANG === 'ar' ? AR_DAYS[d.getDay()] : fmtDate(d, { weekday: 'short' }));
+    days += `<button type="button" data-date="${iso}" ${closed ? 'disabled' : ''} aria-pressed="${on}" class="min-w-0 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border-2 text-center transition ${closed ? 'opacity-40 cursor-not-allowed border-slate-100' : on ? 'border-brand bg-brand text-white shadow-glow' : 'border-slate-200 hover:border-brand/40'}">
+      <span class="block text-[10px] sm:text-xs font-bold truncate px-0.5 ${on ? 'text-white/90' : 'text-slate-500'}">${top}</span>
+      <span class="block text-lg sm:text-2xl font-black leading-tight">${d.getDate()}</span>
+      <span class="hidden sm:block text-xs ${on ? 'text-white/90' : 'text-slate-500'}">${fmtDate(d, { month: 'short' })}</span></button>`;
   }
-  $('#bkDates').innerHTML = html;
+  $('#bkDates').innerHTML = `
+    <div class="flex items-center justify-between gap-2 mb-3">
+      ${navBtn(-1, w === 0, 'chevron-right')}
+      <b class="text-sm sm:text-base text-brand-navy text-center">${range}</b>
+      ${navBtn(1, w === BOOK_WEEKS - 1, 'chevron-left')}
+    </div>
+    <div class="grid grid-cols-7 gap-1.5 sm:gap-2">${days}</div>`;
 }
 
 function slotsFor(iso) {
@@ -268,10 +286,21 @@ function renderSlots() {
   if (!bk.date) { wrap.innerHTML = `<p class="col-span-full text-sm text-slate-500 bg-slate-50 rounded-xl p-4">${t('bk.pickDate')}</p>`; return; }
   const slots = slotsFor(bk.date); const avail = slots.filter(s => !s.past && !s.taken);
   if (!avail.length) { wrap.innerHTML = `<p class="col-span-full text-sm text-slate-500 bg-slate-50 rounded-xl p-4">${slots.length ? t('bk.noSlots') : t('bk.closed')}</p>`; return; }
-  wrap.innerHTML = slots.filter(s => !s.past).map(s => {
+  const groups = [
+    { key: 'bk.morning', icon: 'sunrise', test: h => h < 12 },
+    { key: 'bk.afternoon', icon: 'sun', test: h => h >= 12 && h < 17 },
+    { key: 'bk.evening', icon: 'moon', test: h => h >= 17 }
+  ];
+  const btn = s => {
     const on = bk.time === s.key;
-    return `<button type="button" data-time="${s.key}" ${s.taken ? 'disabled' : ''} class="h-11 rounded-xl border-2 text-sm font-bold transition ${s.taken ? 'border-slate-100 text-slate-300 line-through cursor-not-allowed' : on ? 'border-brand bg-brand text-white' : 'border-slate-200 hover:border-brand/40 text-slate-700'}" dir="ltr">${s.taken ? t('bk.taken') : fmtTime(s.hh, s.mm)}</button>`;
+    return `<button type="button" data-time="${s.key}" ${s.taken ? 'disabled' : ''} aria-pressed="${on}" class="h-11 rounded-xl border-2 text-sm font-bold transition ${s.taken ? 'border-slate-100 text-slate-300 line-through cursor-not-allowed' : on ? 'border-brand bg-brand text-white shadow-glow' : 'border-slate-200 hover:border-brand/40 text-slate-700'}">${s.taken ? t('bk.taken') : `<span dir="ltr">${fmtTime(s.hh, s.mm)}</span>`}</button>`;
+  };
+  wrap.innerHTML = groups.map(g => {
+    const list = slots.filter(s => !s.past && g.test(s.hh)); if (!list.length) return '';
+    return `<div><h4 class="flex items-center gap-1.5 text-xs font-extrabold text-slate-500 mb-2"><i data-lucide="${g.icon}" class="w-4 h-4 text-sun"></i>${t(g.key)}</h4>
+      <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">${list.map(btn).join('')}</div></div>`;
   }).join('');
+  icons();
 }
 
 function bkLabels(b) {
@@ -317,7 +346,7 @@ function showStep(n) {
     const lbl = li.querySelector('span.block');
     lbl.classList.toggle('text-brand', i === n); lbl.classList.toggle('text-brand-navy', i < n); lbl.classList.toggle('text-slate-400', i > n);
   });
-  $('#bkPrev').classList.toggle('invisible', n === 1);
+  $('#bkPrev').classList.toggle('hidden', n === 1);
   $('#bkNext').classList.toggle('hidden', n === 3);
   $('#bkSubmit').classList.toggle('hidden', n !== 3);
 }
@@ -392,7 +421,7 @@ async function submitBooking(e) {
       <button type="button" data-close-modal class="mt-4 text-sm font-bold text-slate-500 hover:text-brand">${t('bk.close')}</button>
     </div>`);
   // إعادة ضبط النموذج
-  Object.assign(bk, { pet: null, service: null, date: null, time: null });
+  Object.assign(bk, { pet: null, service: null, date: null, time: null, week: 0 });
   $('#bookingForm').reset();
   renderBookingAll(); showStep(1);
 }
@@ -811,6 +840,7 @@ function bindEvents() {
     // الحجز
     if (d.pet && el.closest('#petTypeOptions')) { bk.pet = d.pet; showErr('pet', false); renderPetTypes(); renderSummary(); icons(); return; }
     if (d.bkService) { bk.service = d.bkService; showErr('service', false); renderBkServices(); renderSummary(); icons(); return; }
+    if (d.weekNav) { bk.week = (bk.week || 0) + Number(d.weekNav); renderDates(); icons(); return; }
     if (d.date && el.closest('#bkDates')) { bk.date = d.date; bk.time = null; showErr('date', false); renderDates(); renderSlots(); renderSummary(); loadRemoteSlots(d.date); return; }
     if (d.time) { bk.time = d.time; showErr('time', false); renderSlots(); renderSummary(); return; }
     if (d.cancelBooking) {
