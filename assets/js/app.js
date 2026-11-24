@@ -147,6 +147,10 @@ function renderLinks() {
   $$('[data-wa-text]').forEach(s => { s.textContent = CLINIC.whatsappDisplay; });
   $$('[data-wa-emergency]').forEach(a => { a.href = waLink(t('wa.emergency')); a.target = '_blank'; a.rel = 'noopener'; });
   $$('[data-wa-general]').forEach(a => { a.href = waLink(t('wa.general')); a.target = '_blank'; a.rel = 'noopener'; });
+  const dp = $('#doctorPhoto');
+  if (dp && CLINIC.doctorPhoto && !dp.querySelector('img')) {
+    dp.insertAdjacentHTML('beforeend', `<img src="${CLINIC.doctorPhoto}" alt="د. أحمد الرعود - Dr. Ahmad Alroud" onerror="this.remove()" class="absolute inset-0 w-full h-full object-cover">`);
+  }
   $$('[data-email-link]').forEach(a => { a.href = `mailto:${CLINIC.email}`; });
   $$('[data-email-text]').forEach(s => { s.textContent = CLINIC.email; });
   $$('[data-fb-link]').forEach(a => { a.href = CLINIC.facebookUrl; });
@@ -781,7 +785,7 @@ function initNav() {
   $$('#mobileMenu a').forEach(a => a.addEventListener('click', () => { $('#mobileMenu').classList.add('hidden'); $('#menuBtn').setAttribute('aria-expanded', 'false'); }));
 
   if ('IntersectionObserver' in window) {
-    const ids = ['home', 'services', 'booking', 'shop', 'pet-profile', 'gallery', 'blog', 'contact'];
+    const ids = ['home', 'doctor', 'services', 'booking', 'shop', 'pet-profile', 'gallery', 'blog', 'contact'];
     const obs = new IntersectionObserver(es => es.forEach(e => {
       if (!e.isIntersecting) return;
       $$('.nav-link, .bnav').forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
