@@ -1,10 +1,10 @@
 /* Service Worker — مركز رحيم البيطري
    يجعل الموقع والتطبيق يفتحان بسرعة ويعملان دون إنترنت (عرض المعلومات فقط؛ الحجز يحتاج اتصالاً).
    غيّر رقم VERSION عند كل تحديث للملفات. */
-const VERSION = 'raheem-v11';
+const VERSION = 'raheem-v12';
 const PRECACHE = [
   './', 'index.html', 'manifest.webmanifest',
-  'assets/css/custom.css?v=11', 'assets/js/config.js?v=11', 'assets/js/db.js?v=11', 'assets/js/data.js?v=11', 'assets/js/app.js?v=11',
+  'assets/css/custom.css?v=12', 'assets/js/config.js?v=12', 'assets/js/db.js?v=12', 'assets/js/data.js?v=12', 'assets/js/app.js?v=12',
   'images/logo.jpg', 'images/icons/icon-192.png', 'images/icons/icon-512.png',
   'images/clinic-front.jpg', 'images/waiting-area.jpg'
 ];

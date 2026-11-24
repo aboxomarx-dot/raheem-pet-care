@@ -118,6 +118,7 @@ const EN = {
   'ph.msg': 'Your message...', 'err.contact': 'Please fill in your name, a valid phone number and your message.',
   'contact.send': 'Send via WhatsApp',
   'footer.about': "Your pet's health is in merciful hands. Complete pet health care in North Marka, Amman.",
+  'footer.privacy': 'Privacy policy',
   'footer.links': 'Quick links', 'footer.services': 'Services', 'footer.rights': 'All rights reserved.',
   'footer.made': 'Made with love for pets 🐾',
   'float.call': 'Call now', 'float.wa': 'Emergency WhatsApp', 'float.sos': 'SOS',
