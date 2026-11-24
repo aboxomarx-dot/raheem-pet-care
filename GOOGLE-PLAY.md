@@ -8,6 +8,8 @@
 | اسم الأيقونة | رحيم البيطري |
 | المعرّف (Package ID) | `com.raheempetcare.app` (لا يمكن تغييره بعد النشر) |
 | الإصدار | 1.0.0 (رقم الإصدار 1) |
+| أقل نظام مدعوم | أندرويد 7.0 (API 24) |
+| بصمة مفتاح الرفع SHA-256 | `F0:F4:90:A7:BB:15:3B:18:D9:F8:9D:7E:8A:C7:3D:95:29:7D:B1:C9:2E:04:FA:A7:E7:27:36:13:51:65:56:B2` |
 | الملف المطلوب لجوجل بلاي | `android-app/app-release-bundle.aab` |
 | ملف للتجربة على الهاتف | `android-app/app-release-signed.apk` |
 | مفتاح التوقيع | `android-app/raheem-upload-key.keystore` (الاسم المستعار: `raheem`) |
@@ -26,7 +28,9 @@
 1. **Create app** → الاسم: مركز رحيم البيطري، اللغة الافتراضية: العربية، النوع: App، مجاني.
 2. **Test and release → Production** (أو Closed testing) → **Create new release**.
 3. فعّل **Play App Signing** (الإعداد الافتراضي) وارفع الملف `app-release-bundle.aab`.
-4. **مهم بعد الرفع:** من **Test and release → Setup → App signing** انسخ قيمة **SHA-256 certificate fingerprint** الخاصة بـ «App signing key certificate» وأرسلها لي، أو أضفها إلى ملف `assetlinks.json`. بدونها يظهر شريط عنوان أعلى التطبيق المنزّل من المتجر.
+4. **مهم بعد الرفع:** جوجل يعيد توقيع التطبيق بمفتاحه الخاص (Play App Signing). من **Test and release → Setup → App signing** انسخ قيمة **SHA-256 certificate fingerprint** الخاصة بـ «App signing key certificate» وأرسلها لي لأضيفها إلى ملف التحقق. بدونها يظهر شريط عنوان أعلى التطبيق المنزّل من المتجر.
+
+   ملف التحقق منشور في المستودع `aboxomarx-dot/aboxomarx-dot.github.io` على الرابط: https://aboxomarx-dot.github.io/.well-known/assetlinks.json
 
 ## 4) صفحة المتجر (Store listing)
 | الحقل | المحتوى المقترح |
@@ -57,6 +61,6 @@
 
 ## 6) إصدار تحديث لاحقاً
 محتوى الموقع يتحدّث تلقائياً في التطبيق. لا تحتاج إصداراً جديداً إلا إذا غيّرت الأيقونة أو الاسم أو الألوان:
-1. في `android-app/twa-manifest.json` زد `appVersionCode` بواحد وعدّل `appVersionName`.
-2. من مجلد `android-app` شغّل `bubblewrap update` ثم `bubblewrap build` (سيطلب كلمة مرور المفتاح).
-3. ارفع ملف `.aab` الجديد في إصدار جديد على Play Console.
+1. زد `versionCode` بواحد و`versionName` في `android-app/app/build.gradle` و`twa-manifest.json`.
+2. ابنِ النسخة غير الموقّعة (اطلب ذلك من Claude)، ثم شغّل `android-app/sign-app.ps1` لتوقيعها بكلمة مرورك.
+3. ارفع ملف `app-release-bundle.aab` الجديد في إصدار جديد على Play Console.
