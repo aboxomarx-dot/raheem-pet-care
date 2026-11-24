@@ -1,6 +1,6 @@
 /* ==========================================================
    مركز رحيم البيطري — منطق الواجهة الأمامية (بدون خادم)
-   الأقسام: الترجمة · الروابط · الخدمات · الحجز · المتجر والسلة ·
+   الأقسام: الترجمة · الروابط · الخدمات · الحجز ·
             ملف الحيوان · المعرض · المدونة · التواصل · عام
    ========================================================== */
 'use strict';
@@ -403,144 +403,6 @@ function prefillBooking({ service, pet, petName }) {
   showStep(bk.pet ? 2 : 1);
   $('#booking').scrollIntoView({ behavior: 'smooth' });
   toast(t('bk.prefilled'));
-}
-
-/* ======================= المتجر والسلة ======================= */
-let shopCat = 'all', shopQuery = '';
-let cart = store.get('raheem_cart', {});
-const saveCart = () => store.set('raheem_cart', cart);
-const cartCount = () => Object.values(cart).reduce((a, b) => a + b, 0);
-const cartSubtotal = () => Object.entries(cart).reduce((s, [id, q]) => { const p = PRODUCTS.find(x => x.id === id); return s + (p ? p.price * q : 0); }, 0);
-const coMethod = () => ($('input[name="method"]:checked') || {}).value || 'pickup';
-const deliveryFee = () => (coMethod() === 'delivery' && cartSubtotal() < CLINIC.freeDeliveryOver ? CLINIC.deliveryFee : 0);
-
-function renderShopFilters() {
-  const all = [{ id: 'all', icon: 'layout-grid', ar: t('shop.all'), en: t('shop.all') }, ...CATEGORIES];
-  $('#shopFilters').innerHTML = all.map(c => `<button type="button" data-cat="${c.id}" class="shrink-0 h-11 px-4 rounded-xl font-bold text-sm inline-flex items-center gap-2 transition ${shopCat === c.id ? 'bg-brand text-white shadow-glow' : 'bg-white text-slate-600 hover:text-brand border border-wood/50'}"><i data-lucide="${c.icon}" class="w-4 h-4"></i>${L(c)}</button>`).join('');
-}
-
-function renderProducts() {
-  const q = shopQuery.trim().toLowerCase();
-  const list = PRODUCTS.filter(p => (shopCat === 'all' || p.cat === shopCat) &&
-    (!q || [p.ar.name, p.en.name, p.ar.desc, p.en.desc].join(' ').toLowerCase().includes(q)));
-  $('#noProducts').classList.toggle('hidden', list.length > 0);
-  $('#productsGrid').innerHTML = list.map(p => {
-    const c = COLORS[p.color]; const x = L(p); const qty = cart[p.id] || 0; const cat = CATEGORIES.find(k => k.id === p.cat);
-    const badge = p.badge ? `<span class="absolute top-2 start-2 z-10 rounded-full px-2.5 py-1 text-[11px] font-bold ${BADGES[p.badge].cls}">${L(BADGES[p.badge])}</span>` : '';
-    return `
-    <article class="group bg-white rounded-3xl p-3 sm:p-4 shadow-sm hover:shadow-soft border border-wood/30 flex flex-col transition">
-      <div class="relative aspect-square rounded-2xl ${c.soft} grid place-items-center overflow-hidden">
-        <i data-lucide="${p.icon}" class="w-14 h-14 sm:w-16 sm:h-16 ${c.text} group-hover:scale-110 transition duration-300"></i>
-        ${p.img ? `<img src="${p.img}" alt="${esc(x.name)}" loading="lazy" onerror="this.remove()" class="absolute inset-0 w-full h-full object-cover">` : ''}
-        ${badge}
-      </div>
-      <span class="mt-3 text-[11px] font-bold text-slate-400">${cat ? L(cat) : ''}</span>
-      <h3 class="font-extrabold text-brand-navy leading-snug text-sm sm:text-base">${x.name}</h3>
-      <p class="text-xs text-slate-500 mt-1">${x.desc}</p>
-      <div class="mt-auto pt-3">
-        <div class="flex items-baseline gap-2 flex-wrap"><b class="text-brand text-base sm:text-lg whitespace-nowrap">${money(p.price)}</b>${p.oldPrice ? `<s class="text-xs text-slate-400 whitespace-nowrap">${money(p.oldPrice)}</s>` : ''}</div>
-        ${qty ? `<div class="mt-2 flex items-center justify-between gap-1 bg-brand/10 rounded-xl p-1">
-            <button type="button" data-dec="${p.id}" class="w-10 h-10 rounded-lg bg-white text-brand grid place-items-center" aria-label="-"><i data-lucide="minus" class="w-4 h-4"></i></button>
-            <b class="flex-1 text-center text-brand-navy">${qty}</b>
-            <button type="button" data-inc="${p.id}" class="w-10 h-10 rounded-lg bg-brand text-white grid place-items-center" aria-label="+"><i data-lucide="plus" class="w-4 h-4"></i></button></div>`
-          : `<button type="button" data-add="${p.id}" class="mt-2 w-full h-11 rounded-xl bg-brand hover:bg-brand-dark active:scale-[.98] text-white font-bold text-sm inline-flex items-center justify-center gap-1.5 transition"><i data-lucide="shopping-bag" class="w-4 h-4"></i><span>${t('shop.add')}</span></button>`}
-      </div>
-    </article>`;
-  }).join('');
-}
-
-function setQty(id, q) {
-  if (q <= 0) delete cart[id]; else cart[id] = Math.min(q, 99);
-  saveCart(); renderProducts(); renderCart(); icons();
-}
-
-function renderCart() {
-  const n = cartCount();
-  [$('#cartCount'), ...$$('[data-cart-badge]')].forEach(b => { b.textContent = n; b.classList.toggle('hidden', n === 0); });
-  const items = Object.entries(cart).map(([id, q]) => ({ p: PRODUCTS.find(x => x.id === id), q })).filter(x => x.p);
-  $('#checkoutForm').classList.toggle('hidden', !items.length);
-  $('#cartFooter').classList.toggle('hidden', !items.length);
-  if (!items.length) {
-    $('#cartItems').innerHTML = `<div class="text-center py-16"><span class="mx-auto w-20 h-20 rounded-full bg-sand grid place-items-center"><i data-lucide="shopping-bag" class="w-9 h-9 text-wood-dark"></i></span>
-      <h4 class="mt-4 font-extrabold text-brand-navy">${t('cart.empty')}</h4><p class="text-sm text-slate-500 mt-1">${t('cart.emptyText')}</p>
-      <a href="#shop" data-close-cart class="mt-5 inline-flex h-11 px-5 rounded-xl bg-brand text-white font-bold items-center">${t('cart.browse')}</a></div>`;
-    return;
-  }
-  $('#cartItems').innerHTML = items.map(({ p, q }) => {
-    const c = COLORS[p.color];
-    return `<div class="flex gap-3 items-center rounded-2xl border border-slate-100 p-3">
-      <span class="w-14 h-14 shrink-0 rounded-xl ${c.soft} ${c.text} grid place-items-center"><i data-lucide="${p.icon}" class="w-7 h-7"></i></span>
-      <div class="flex-1 min-w-0"><b class="block text-sm text-brand-navy truncate">${L(p).name}</b><span class="text-xs text-slate-500">${money(p.price)}</span>
-        <div class="mt-1.5 flex items-center gap-1">
-          <button type="button" data-dec="${p.id}" class="w-7 h-7 rounded-lg border grid place-items-center" aria-label="-"><i data-lucide="minus" class="w-3.5 h-3.5"></i></button>
-          <b class="w-7 text-center text-sm">${q}</b>
-          <button type="button" data-inc="${p.id}" class="w-7 h-7 rounded-lg border grid place-items-center" aria-label="+"><i data-lucide="plus" class="w-3.5 h-3.5"></i></button>
-          <button type="button" data-remove="${p.id}" class="ms-auto text-xs text-red-500 font-bold hover:underline">${t('cart.remove')}</button>
-        </div></div>
-      <b class="text-sm text-brand-navy whitespace-nowrap">${money(p.price * q)}</b></div>`;
-  }).join('');
-  const sub = cartSubtotal(); const fee = deliveryFee();
-  $('#cartSubtotal').textContent = money(sub);
-  $('#cartFee').textContent = fee ? money(fee) : t('cart.free');
-  $('#cartTotal').textContent = money(sub + fee);
-  $('#deliveryFeeLabel').textContent = `${money(CLINIC.deliveryFee)}`;
-  const delivery = coMethod() === 'delivery';
-  $('#deliveryFields').classList.toggle('hidden', !delivery);
-  $('#freeDeliveryHint').textContent = delivery ? (sub >= CLINIC.freeDeliveryOver ? t('cart.freeYes') : t('cart.freeHint', { x: money(CLINIC.freeDeliveryOver - sub) })) : '';
-}
-
-function renderAreas() {
-  const cur = $('#coArea').value;
-  $('#coArea').innerHTML = `<option value="">${t('cart.chooseArea')}</option>` + AMMAN_AREAS.map((a, i) => `<option value="${i}">${L(a)}</option>`).join('');
-  $('#coArea').value = cur;
-}
-
-function openCart() {
-  $('#cartOverlay').classList.remove('hidden');
-  $('#cartDrawer').style.transform = 'translateX(0)';
-  $('#cartDrawer').setAttribute('aria-hidden', 'false');
-  lockScroll(true);
-}
-function closeCart() {
-  $('#cartOverlay').classList.add('hidden');
-  $('#cartDrawer').style.transform = '';
-  $('#cartDrawer').setAttribute('aria-hidden', 'true');
-  lockScroll(false);
-}
-
-function checkout() {
-  const err = $('#coError'); const name = $('#coName').value.trim(); const phone = $('#coPhone').value;
-  const delivery = coMethod() === 'delivery';
-  let msg = '';
-  if (name.length < 2) msg = t('cart.errName');
-  else if (!validPhone(phone)) msg = t('cart.errPhone');
-  else if (delivery && ($('#coArea').value === '' || $('#coAddress').value.trim().length < 4)) msg = t('cart.errAddr');
-  err.textContent = msg; err.classList.toggle('hidden', !msg);
-  if (msg) { err.scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
-  const orderNo = 'RO-' + String(Date.now()).slice(-6);
-  const lines = [t('cart.waIntro'), `(${t('cart.orderNo')}: ${orderNo})`, ''];
-  Object.entries(cart).forEach(([id, q]) => { const p = PRODUCTS.find(x => x.id === id); if (p) lines.push(`• ${L(p).name} × ${q} = ${money(p.price * q)}`); });
-  const sub = cartSubtotal(); const fee = deliveryFee();
-  lines.push('', `${t('cart.subtotal')}: ${money(sub)}`);
-  if (delivery) lines.push(`${t('cart.fee')}: ${fee ? money(fee) : t('cart.free')}`);
-  lines.push(`${t('cart.total')}: ${money(sub + fee)}`, '',
-    `${t('cart.method')}: ${delivery ? t('cart.delivery') : t('cart.pickup')}`);
-  if (delivery) lines.push(`${t('cart.area')}: ${L(AMMAN_AREAS[Number($('#coArea').value)])}`, `${t('cart.address')}: ${$('#coAddress').value.trim()}`);
-  lines.push(`${t('bk.owner')}: ${name}`, `${t('bk.phone')}: ${normPhone(phone)}`);
-  window.open(waLink(lines.join('\n')), '_blank', 'noopener');
-  if (DB.enabled) {
-    const items = Object.entries(cart).map(([id, q]) => { const p = PRODUCTS.find(x => x.id === id); return p ? { id, name: p.ar.name, qty: q, price: p.price } : null; }).filter(Boolean);
-    DB.createOrder({ ref: orderNo, customer_name: name, phone: normPhone(phone), method: delivery ? 'delivery' : 'pickup',
-      area: delivery ? AMMAN_AREAS[Number($('#coArea').value)].ar : null, address: delivery ? $('#coAddress').value.trim() : null,
-      items, subtotal: sub, delivery_fee: fee, total: sub + fee }).catch(() => {});
-  }
-  cart = {}; saveCart(); renderCart(); renderProducts(); closeCart();
-  openModal(`<div class="p-8 text-center">
-    <svg class="check-anim mx-auto w-20 h-20" viewBox="0 0 52 52"><circle cx="26" cy="26" r="25" fill="#0077C8"/><path d="M14 27 l8 8 l16-17" fill="none" stroke="#fff" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <h3 class="mt-4 text-2xl font-black text-brand-navy">${t('cart.successTitle')}</h3>
-    <p class="mt-2 text-slate-600">${t('cart.successText')}</p>
-    <p class="mt-4 inline-block rounded-xl bg-sand px-4 py-2 font-bold text-brand-navy">${t('cart.orderNo')}: <span dir="ltr">${orderNo}</span></p>
-    <div><button type="button" data-close-modal class="mt-6 h-11 px-6 rounded-xl bg-brand text-white font-bold">${t('bk.close')}</button></div></div>`);
 }
 
 /* ======================= ملف الحيوان الأليف ومتتبع التطعيمات ======================= */
@@ -962,18 +824,6 @@ function bindEvents() {
       downloadICS({ uid: b.ref, title: `${t('cal.bookingTitle')} — ${L(svc).title}`, start: st, minutes: svc.minutes, desc: bookingWaText(b), filename: `${b.ref}.ics` });
       return;
     }
-    // المتجر
-    if (d.cat) { shopCat = d.cat; renderShopFilters(); renderProducts(); icons(); return; }
-    if (d.add) {
-      setQty(d.add, (cart[d.add] || 0) + 1); toast(t('shop.added'), 'ok', { label: t('cart.view'), fn: openCart });
-      [$('#cartCount'), ...$$('[data-cart-badge]')].forEach(b => { b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump'); });
-      return;
-    }
-    if ('openCart' in d) { openCart(); return; }
-    if (d.inc) { setQty(d.inc, (cart[d.inc] || 0) + 1); return; }
-    if (d.dec) { setQty(d.dec, (cart[d.dec] || 0) - 1); return; }
-    if (d.remove) { setQty(d.remove, 0); return; }
-    if ('closeCart' in d) { closeCart(); return; }
     // ملف الحيوان
     if (d.petId) { curPet = d.petId; savePets(); $('#ppForm').classList.add('hidden'); renderPets(); icons(); return; }
     if ('ppNew' in d) { openPetForm(null); return; }
@@ -1009,12 +859,6 @@ function bindEvents() {
   $('#bookingForm').addEventListener('submit', submitBooking);
   $('#bkPetName').addEventListener('input', renderSummary);
 
-  // المتجر والسلة
-  $('#shopSearch').addEventListener('input', e => { shopQuery = e.target.value; renderProducts(); icons(); });
-  $('#cartBtn').addEventListener('click', openCart);
-  $('#cartOverlay').addEventListener('click', closeCart);
-  $$('input[name="method"]').forEach(r => r.addEventListener('change', renderCart));
-  $('#checkoutBtn').addEventListener('click', checkout);
 
   // ملف الحيوان
   $('#ppAddBtn').addEventListener('click', () => openPetForm(null));
@@ -1060,14 +904,13 @@ function bindEvents() {
       if (e.key === 'ArrowRight') showLB(lbIndex + (rtl ? -1 : 1));
       return;
     }
-    if (e.key === 'Escape') { closeModal(); closeCart(); }
+    if (e.key === 'Escape') closeModal();
   });
 }
 
 /* ======================= التشغيل ======================= */
 function renderAll() {
   renderLinks(); renderHours(); renderServices(); renderBookingAll(); showStep(bk.step);
-  renderShopFilters(); renderProducts(); renderCart(); renderAreas();
   renderPets(); renderGallery(); renderBlog(); injectBlogSchema(); renderRays();
   icons(); observeReveal();
 }

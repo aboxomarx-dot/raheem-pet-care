@@ -47,17 +47,15 @@
 
   <!-- اللوحة -->
   <section id="dashView" class="hidden">
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <div class="grid grid-cols-3 gap-3">
       <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">حجوزات اليوم</span><b id="stToday" class="block text-2xl text-brand-navy">0</b></div>
       <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">بانتظار التأكيد</span><b id="stPending" class="block text-2xl text-tang">0</b></div>
-      <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">طلبات جديدة</span><b id="stOrders" class="block text-2xl text-brand">0</b></div>
       <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">رسائل غير مقروءة</span><b id="stMsgs" class="block text-2xl text-leaf">0</b></div>
     </div>
 
     <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
       <nav class="flex gap-2" id="tabs">
         <button data-tab="bookings" class="tab h-10 px-4 rounded-xl font-bold">الحجوزات</button>
-        <button data-tab="orders" class="tab h-10 px-4 rounded-xl font-bold">الطلبات</button>
         <button data-tab="messages" class="tab h-10 px-4 rounded-xl font-bold">الرسائل</button>
       </nav>
       <div class="flex flex-wrap gap-2 items-center">
@@ -72,8 +70,8 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="assets/js/config.js?v=5"></script>
-<script src="assets/js/data.js?v=5"></script>
+<script src="assets/js/config.js?v=6"></script>
+<script src="assets/js/data.js?v=6"></script>
 <script>
 'use strict';
 const $ = s => document.querySelector(s);
@@ -146,7 +144,6 @@ async function stats() {
   const c = async (q) => { const { count } = await q; return count || 0; };
   $('#stToday').textContent = await c(sb.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_date', t0).neq('status', 'cancelled'));
   $('#stPending').textContent = await c(sb.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending').gte('booking_date', t0));
-  $('#stOrders').textContent = await c(sb.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'new'));
   $('#stMsgs').textContent = await c(sb.from('messages').select('id', { count: 'exact', head: true }).eq('handled', false));
 }
 

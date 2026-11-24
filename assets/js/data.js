@@ -19,8 +19,6 @@ const CLINIC = {
   googleRating: 4.2,                  // تقييم Google وعدد المراجعات (حدّثهما من حين لآخر)
   googleReviews: 53,
   currency: { ar: 'د.أ', en: 'JOD' },
-  deliveryFee: 2,                     // رسوم التوصيل داخل عمّان (دينار)
-  freeDeliveryOver: 35,               // توصيل مجاني للطلبات فوق هذا المبلغ
   slotMinutes: 30                     // مدة الموعد الواحد بالدقائق
 };
 
@@ -36,15 +34,6 @@ const HOURS = {   // حسب خرائط Google وصفحة فيسبوك
   5: [14, 18]   // الجمعة
 };
 const WEEK_ORDER = [6, 0, 1, 2, 3, 4, 5]; // ترتيب عرض الأيام (يبدأ بالسبت)
-
-const AMMAN_AREAS = [
-  { ar: 'عبدون', en: 'Abdoun' }, { ar: 'الصويفية', en: 'Sweifieh' }, { ar: 'دير غبار', en: 'Deir Ghbar' },
-  { ar: 'خلدا', en: 'Khalda' }, { ar: 'تلاع العلي', en: "Tla' Al-Ali" }, { ar: 'الجبيهة', en: 'Jubeiha' },
-  { ar: 'شفا بدران', en: 'Shafa Badran' }, { ar: 'دابوق', en: 'Dabouq' }, { ar: 'الرابية', en: 'Rabieh' },
-  { ar: 'أم أذينة', en: 'Um Uthaina' }, { ar: 'جبل عمّان', en: 'Jabal Amman' }, { ar: 'اللويبدة', en: 'Weibdeh' },
-  { ar: 'مرج الحمام', en: 'Marj Al-Hamam' }, { ar: 'طبربور', en: 'Tabarbour' }, { ar: 'ماركا', en: 'Marka' },
-  { ar: 'الهاشمي', en: 'Hashmi' }, { ar: 'منطقة أخرى', en: 'Other area' }
-];
 
 /* ---------- 2) الترجمة الإنجليزية للنصوص الثابتة في الصفحة ----------
    النص العربي يُقرأ تلقائياً من index.html، لذا تكفي الإنجليزية هنا. */
@@ -62,13 +51,13 @@ const EN = {
   'hero.text': 'A complete pet care center in North Marka for cats, dogs and birds: check-ups, vaccinations, spay & neuter, grooming, boarding and a pharmacy. Our team welcomes you in a clean, sterile and warm space where you and your pet feel at ease.',
   'hero.cta1': 'Book a Check-up or Vaccine',
   'hero.cta2': 'Emergency WhatsApp',
-  'hero.p1': 'Specialized veterinarians', 'hero.p2': 'Book online in a minute', 'hero.p3': 'Pharmacy & shop on site',
+  'hero.p1': 'Specialized veterinarians', 'hero.p2': 'Book online in a minute', 'hero.p3': 'Veterinary pharmacy on site',
   'img.front': 'Raheem Pet Care Center front', 'img.waiting': 'Waiting area',
   'hero.float1': 'Fully sterile rooms', 'hero.float1s': 'Exam · Surgery · Care',
   'hero.float2': 'Care with love', 'hero.float2s': 'Cats · Dogs · Birds · More',
   'trust.1': 'Sterile exam & surgery rooms', 'trust.1s': 'Full sterilization to high standards',
   'trust.2': 'Specialized vet team', 'trust.2s': 'Expertise with compassion',
-  'trust.3': 'Pharmacy & full pet shop', 'trust.3s': 'Medicine, food & supplies',
+  'trust.3': 'Veterinary pharmacy', 'trust.3s': 'Medicines and treatment supplies',
   'trust.4': 'Emergency cases received', 'trust.4s': 'Instant contact via WhatsApp',
   'services.kicker': 'Our Veterinary Services',
   'services.title': 'Everything your pet needs under one roof',
@@ -125,7 +114,7 @@ const EN = {
   'footer.links': 'Quick links', 'footer.services': 'Services', 'footer.rights': 'All rights reserved.',
   'footer.made': 'Made with love for pets 🐾',
   'float.call': 'Call now', 'float.wa': 'Emergency WhatsApp', 'float.sos': 'SOS',
-  'bnav.book': 'Book', 'bnav.cart': 'Cart', 'bnav.wa': 'WhatsApp',
+  'bnav.book': 'Book', 'bnav.contact': 'Contact', 'bnav.wa': 'WhatsApp',
   'cart.title': 'Shopping cart', 'cart.method': 'Delivery method', 'cart.pickup': 'Clinic pickup', 'cart.free': 'Free',
   'cart.delivery': 'Delivery in Amman', 'ph.address': 'Street, building no., nearest landmark',
   'cart.subtotal': 'Subtotal', 'cart.fee': 'Delivery fee', 'cart.total': 'Total', 'cart.checkout': 'Order via WhatsApp'
@@ -312,55 +301,6 @@ const COLORS = {
   sun:   { soft: 'bg-sun/20', text: 'text-amber-600', solid: 'bg-sun', border: 'border-sun' },
   navy:  { soft: 'bg-brand-navy/10', text: 'text-brand-navy', solid: 'bg-brand-navy', border: 'border-brand-navy' },
   wood:  { soft: 'bg-wood/40', text: 'text-wood-dark', solid: 'bg-wood-dark', border: 'border-wood-dark' }
-};
-
-/* ---------- 6) المتجر ---------- */
-const CATEGORIES = [
-  { id: 'food', icon: 'bone', ar: 'أطعمة جافة ورطبة', en: 'Dry & Wet Food' },
-  { id: 'supplements', icon: 'pill', ar: 'فيتامينات ومكملات', en: 'Vitamins & Supplements' },
-  { id: 'carriers', icon: 'briefcase', ar: 'أقفاص تنقل', en: 'Pet Carriers' },
-  { id: 'care', icon: 'droplets', ar: 'شامبو ومستلزمات عناية', en: 'Shampoo & Care' }
-];
-
-/* لإضافة صورة حقيقية لمنتج: ضع الملف في images/products/ ثم أضف مثلاً  img: 'images/products/dry-cat-food.jpg' */
-const PRODUCTS = [
-  { id: 'p1', cat: 'food', icon: 'cat', color: 'tang', price: 12.5, badge: 'best',
-    ar: { name: 'طعام جاف للقطط البالغة', desc: 'كيس 2 كغ — غني بالبروتين' }, en: { name: 'Adult Cat Dry Food', desc: '2 kg bag — high protein' } },
-  { id: 'p2', cat: 'food', icon: 'dog', color: 'brand', price: 18,
-    ar: { name: 'طعام جاف للكلاب', desc: 'كيس 3 كغ — لجميع السلالات' }, en: { name: 'Dog Dry Food', desc: '3 kg bag — all breeds' } },
-  { id: 'p3', cat: 'food', icon: 'cat', color: 'sun', price: 9, badge: 'offer', oldPrice: 10.5,
-    ar: { name: 'طعام رطب للقطط', desc: '12 ظرف × 85 غ' }, en: { name: 'Wet Cat Food Pouches', desc: '12 × 85 g pouches' } },
-  { id: 'p4', cat: 'food', icon: 'dog', color: 'leaf', price: 2.25,
-    ar: { name: 'علبة طعام رطب للكلاب', desc: '400 غ — بالدجاج' }, en: { name: 'Wet Dog Food Can', desc: '400 g — chicken' } },
-  { id: 'p5', cat: 'food', icon: 'bird', color: 'sky', price: 4,
-    ar: { name: 'خليط بذور للطيور', desc: '1 كغ — للكناري والبادجي' }, en: { name: 'Bird Seed Mix', desc: '1 kg — canaries & budgies' } },
-  { id: 'p6', cat: 'supplements', icon: 'pill', color: 'leaf', price: 8, badge: 'vet',
-    ar: { name: 'فيتامينات متعددة للقطط', desc: 'معجون 100 غ — يدعم المناعة' }, en: { name: 'Cat Multivitamin Paste', desc: '100 g — immune support' } },
-  { id: 'p7', cat: 'supplements', icon: 'droplet', color: 'sun', price: 11,
-    ar: { name: 'أوميغا 3 للجلد والشعر', desc: '60 كبسولة — لمعان الفرو' }, en: { name: 'Omega-3 Skin & Coat', desc: '60 capsules — shiny coat' } },
-  { id: 'p8', cat: 'supplements', icon: 'circle-dot', color: 'tang', price: 6.5,
-    ar: { name: 'معجون كرات الشعر', desc: 'للقطط — 70 غ' }, en: { name: 'Hairball Relief Paste', desc: 'For cats — 70 g' } },
-  { id: 'p9', cat: 'supplements', icon: 'bone', color: 'brand', price: 13,
-    ar: { name: 'مكمّل المفاصل للكلاب', desc: 'جلوكوزامين — 60 قرصاً' }, en: { name: 'Dog Joint Support', desc: 'Glucosamine — 60 tablets' } },
-  { id: 'p10', cat: 'carriers', icon: 'briefcase', color: 'navy', price: 18,
-    ar: { name: 'قفص تنقل صغير', desc: 'للقطط والكلاب الصغيرة حتى 6 كغ' }, en: { name: 'Small Pet Carrier', desc: 'Cats & small dogs up to 6 kg' } },
-  { id: 'p11', cat: 'carriers', icon: 'luggage', color: 'brand', price: 32, badge: 'best',
-    ar: { name: 'قفص تنقل كبير معتمد للسفر', desc: 'حتى 15 كغ — بباب معدني' }, en: { name: 'Large Travel Carrier', desc: 'Up to 15 kg — metal door' } },
-  { id: 'p12', cat: 'carriers', icon: 'backpack', color: 'sky', price: 24,
-    ar: { name: 'حقيبة ظهر شفافة للقطط', desc: 'تهوية ممتازة ونافذة بانورامية' }, en: { name: 'Cat Bubble Backpack', desc: 'Great ventilation, panoramic window' } },
-  { id: 'p13', cat: 'care', icon: 'droplets', color: 'sky', price: 7,
-    ar: { name: 'شامبو للبشرة الحساسة', desc: '250 مل — خالٍ من العطور' }, en: { name: 'Sensitive Skin Shampoo', desc: '250 ml — fragrance free' } },
-  { id: 'p14', cat: 'care', icon: 'bug-off', color: 'leaf', price: 8.5, badge: 'vet',
-    ar: { name: 'شامبو مضاد للبراغيث', desc: '250 مل — حماية فعالة' }, en: { name: 'Anti-Flea Shampoo', desc: '250 ml — effective protection' } },
-  { id: 'p15', cat: 'care', icon: 'brush', color: 'wood', price: 5,
-    ar: { name: 'فرشاة تمشيط ذاتية التنظيف', desc: 'لإزالة الشعر المتساقط' }, en: { name: 'Self-Cleaning Slicker Brush', desc: 'Removes loose fur' } },
-  { id: 'p16', cat: 'care', icon: 'package', color: 'tang', price: 6,
-    ar: { name: 'رمل قطط متكتل', desc: '10 لتر — يمنع الروائح' }, en: { name: 'Clumping Cat Litter', desc: '10 L — odor control' } }
-];
-const BADGES = {
-  best: { ar: 'الأكثر طلباً', en: 'Best seller', cls: 'bg-tang text-white' },
-  offer: { ar: 'عرض خاص', en: 'Special offer', cls: 'bg-red-500 text-white' },
-  vet: { ar: 'ينصح به الطبيب', en: 'Vet recommended', cls: 'bg-leaf text-white' }
 };
 
 /* ---------- 7) جداول التطعيم (استرشادية — راجعها مع الطبيب البيطري للمركز) ----------
