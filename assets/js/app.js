@@ -956,4 +956,8 @@ document.addEventListener('DOMContentLoaded', () => {
   setInterval(renderHours, 60000);
   sendDueNotifications(false);
   if (location.hash.startsWith('#post-')) openPost(location.hash.slice(6));
+  // تثبيت الموقع كتطبيق + عمل دون إنترنت
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
 });

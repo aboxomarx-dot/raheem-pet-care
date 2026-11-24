@@ -1,0 +1,25 @@
+{
+  "id": "./",
+  "name": "مركز رحيم البيطري - Raheem Pet Care Center",
+  "short_name": "رحيم البيطري",
+  "description": "مركز رحيم البيطري في ماركا الشمالية، عمّان: احجز موعدك، تابع تطعيمات حيوانك، وتواصل مع د. أحمد الرعود.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./?source=app",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0077C8",
+  "categories": ["medical", "health", "lifestyle"],
+  "icons": [
+    { "src": "images/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "احجز موعداً", "short_name": "احجز", "url": "./?source=shortcut#booking", "icons": [{ "src": "images/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "ملف حيوانك", "short_name": "ملف حيواني", "url": "./?source=shortcut#pet-profile", "icons": [{ "src": "images/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "تواصل معنا", "short_name": "تواصل", "url": "./?source=shortcut#contact", "icons": [{ "src": "images/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

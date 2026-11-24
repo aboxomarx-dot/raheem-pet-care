@@ -2,3 +2,8 @@
 *.log
 Thumbs.db
 desktop.ini
+
+# مشروع تطبيق أندرويد ومفتاح التوقيع — لا يُرفع أبداً إلى GitHub
+android-app/
+*.keystore
+*.jks
