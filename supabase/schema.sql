@@ -105,6 +105,13 @@ create policy "staff update messages" on public.messages for update to authentic
 drop policy if exists "staff see themselves" on public.staff;
 create policy "staff see themselves" on public.staff for select to authenticated using (user_id = auth.uid());
 
+-- صلاحيات الجداول لواجهة API (المشاريع الجديدة في Supabase لا تمنحها تلقائياً)
+-- سياسات RLS أعلاه هي التي تحدد ما يُسمح به فعلياً لكل صف.
+grant usage on schema public to anon, authenticated;
+grant insert on public.bookings, public.orders, public.messages to anon, authenticated;
+grant select, update on public.bookings, public.orders, public.messages to authenticated;
+grant select on public.staff to authenticated;
+
 -- ---------- 6) دوال آمنة للزوار ----------
 -- الأوقات المحجوزة ليوم معيّن (بدون أي بيانات شخصية)
 create or replace function public.booked_slots(p_date date)
