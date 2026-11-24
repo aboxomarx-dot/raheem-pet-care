@@ -1,0 +1,97 @@
+/* ==========================================================
+   مركز رحيم البيطري — Raheem Pet Care Center
+   أنماط إضافية مكمّلة لـ Tailwind
+   ========================================================== */
+
+:root {
+  --brand: #0077C8;
+  --brand-dark: #1E40AF;
+  --sky: #22B5E8;
+  --navy: #0B2E59;
+  --sun: #F4C430;
+  --leaf: #6DB33F;
+  --tang: #F28C38;
+  --sand: #F5F0EB;
+  --wood: #D6C7B2;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 110px; }
+body { -webkit-font-smoothing: antialiased; }
+
+/* ---- راحة قراءة النص العربي: مسافات أوسع بين الكلمات والأسطر ---- */
+[dir="rtl"] body { line-height: 1.85; word-spacing: .06em; }
+[dir="rtl"] :is(h1, h2, h3, h4, h5) { line-height: 1.6; }
+[dir="rtl"] .leading-tight, [dir="rtl"] .leading-snug { line-height: 1.6 !important; }
+[dir="rtl"] .leading-relaxed { line-height: 1.95 !important; }
+[dir="rtl"] .tracking-wide { letter-spacing: 0 !important; }  /* تباعد الحروف يفصل الحروف العربية المتصلة */
+
+/* ---- شريط التنقل السفلي للجوال ---- */
+.bnav { transition: color .2s; }
+.bnav.active { color: var(--brand); }
+.bnav.active i, .bnav.active svg { transform: translateY(-1px); }
+
+/* إظهار المحتوى تدريجياً عند التمرير (فقط إذا كان JavaScript يعمل) */
+.js .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+.js .reveal.is-visible { opacity: 1; transform: none; }
+
+/* شريط تمرير أنيق */
+::-webkit-scrollbar { width: 10px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--sand); }
+::-webkit-scrollbar-thumb { background: var(--wood); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #b9a589; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* روابط القائمة النشطة */
+.nav-link.active { color: var(--brand); background: rgba(0, 119, 200, .08); }
+
+/* ملمس خشبي دافئ لخلفيات بعض الأقسام */
+.wood-texture {
+  background-color: var(--sand);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(214, 199, 178, .18) 0 2px, transparent 2px 46px),
+    radial-gradient(circle at 20% 10%, rgba(244, 196, 48, .10), transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(34, 181, 232, .10), transparent 45%);
+}
+
+/* زر واتساب العائم - نبض */
+@keyframes pulse-ring {
+  0% { transform: scale(.9); opacity: .7; }
+  80%, 100% { transform: scale(1.6); opacity: 0; }
+}
+.pulse-ring::before {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px;
+  background: #25D366; animation: pulse-ring 2s cubic-bezier(.2, .6, .4, 1) infinite; z-index: -1;
+}
+
+/* نبضة شارة السلة */
+@keyframes bump { 0%{transform:scale(1)} 40%{transform:scale(1.35)} 100%{transform:scale(1)} }
+.bump { animation: bump .45s ease; }
+
+/* علامة صح متحركة في رسالة التأكيد */
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.check-anim path { stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw .6s .15s ease forwards; }
+
+/* أشعة الشعار الزخرفية */
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.rays-spin { animation: spin-slow 120s linear infinite; transform-origin: 50% 50%; }
+
+/* محتوى المقالات */
+.prose-vet h3 { font-weight: 800; font-size: 1.15rem; color: var(--navy); margin: 1.25rem 0 .5rem; }
+.prose-vet p { margin: .6rem 0; line-height: 2; color: #334155; }
+.prose-vet ul { margin: .5rem 0; padding-inline-start: 1.25rem; list-style: disc; }
+.prose-vet ul li { margin: .35rem 0; line-height: 1.9; color: #334155; }
+.prose-vet table { width: 100%; border-collapse: collapse; margin: .75rem 0; font-size: .92rem; }
+.prose-vet th, .prose-vet td { border: 1px solid #e2e8f0; padding: .5rem .65rem; text-align: start; }
+.prose-vet th { background: var(--sand); color: var(--navy); }
+.prose-vet .note { background: #eff8ff; border-inline-start: 4px solid var(--brand); padding: .75rem 1rem; border-radius: .5rem; margin-top: 1rem; }
+
+/* مدخلات التاريخ */
+input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; opacity: .6; }
+
+/* تقليل الحركة لمن يفضّل ذلك */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .js .reveal { opacity: 1; transform: none; }
+}

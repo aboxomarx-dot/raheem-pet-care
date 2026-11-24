@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>لوحة الإدارة | مركز رحيم البيطري</title>
+  <link rel="icon" href="images/logo.jpg">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { brand: { DEFAULT: '#0077C8', dark: '#1E40AF', navy: '#0B2E59' }, sun: '#F4C430', leaf: '#6DB33F', tang: '#F28C38', sand: '#F5F0EB', wood: '#D6C7B2' },
+      fontFamily: { sans: ['Cairo', 'system-ui', 'sans-serif'] } } } };
+  </script>
+  <style>body { line-height: 1.8; word-spacing: .05em; } h1, h2, h3 { line-height: 1.6; }</style>
+</head>
+<body class="font-sans bg-sand text-slate-800 min-h-screen">
+
+<header class="bg-brand-navy text-white">
+  <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between gap-3">
+    <a href="index.html" class="flex items-center gap-2 min-w-0"><img src="images/logo.jpg" alt="" class="w-10 h-10 rounded-full bg-white"><b class="truncate">لوحة إدارة مركز رحيم البيطري</b></a>
+    <div id="userBox" class="hidden items-center gap-2 text-sm">
+      <span id="userEmail" class="hidden sm:inline text-white/70"></span>
+      <button id="logoutBtn" class="h-9 px-3 rounded-lg bg-white/10 hover:bg-white/20 font-bold">خروج</button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+  <!-- غير مهيأة -->
+  <section id="notConfigured" class="hidden bg-white rounded-2xl p-6 shadow">
+    <h1 class="text-xl font-extrabold text-brand-navy">قاعدة البيانات غير مربوطة بعد</h1>
+    <p class="mt-2 text-slate-600">عبّئ <code class="bg-sand px-1 rounded">assets/js/config.js</code> برابط مشروع Supabase ومفتاح anon، ثم شغّل <code class="bg-sand px-1 rounded">supabase/schema.sql</code>. التفاصيل في ملف README.</p>
+  </section>
+
+  <!-- تسجيل الدخول -->
+  <section id="loginView" class="hidden max-w-sm mx-auto bg-white rounded-2xl p-6 shadow mt-6">
+    <h1 class="text-xl font-extrabold text-brand-navy">تسجيل دخول الموظفين</h1>
+    <form id="loginForm" class="mt-4 space-y-3">
+      <input id="email" type="email" required autocomplete="username" placeholder="البريد الإلكتروني" dir="ltr" class="w-full h-11 rounded-xl border border-slate-200 px-3 text-start">
+      <input id="password" type="password" required autocomplete="current-password" placeholder="كلمة المرور" dir="ltr" class="w-full h-11 rounded-xl border border-slate-200 px-3 text-start">
+      <p id="loginError" class="hidden text-sm text-red-600"></p>
+      <button class="w-full h-11 rounded-xl bg-brand text-white font-bold">دخول</button>
+    </form>
+  </section>
+
+  <!-- اللوحة -->
+  <section id="dashView" class="hidden">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">حجوزات اليوم</span><b id="stToday" class="block text-2xl text-brand-navy">0</b></div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">بانتظار التأكيد</span><b id="stPending" class="block text-2xl text-tang">0</b></div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">طلبات جديدة</span><b id="stOrders" class="block text-2xl text-brand">0</b></div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm"><span class="text-xs text-slate-500">رسائل غير مقروءة</span><b id="stMsgs" class="block text-2xl text-leaf">0</b></div>
+    </div>
+
+    <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
+      <nav class="flex gap-2" id="tabs">
+        <button data-tab="bookings" class="tab h-10 px-4 rounded-xl font-bold">الحجوزات</button>
+        <button data-tab="orders" class="tab h-10 px-4 rounded-xl font-bold">الطلبات</button>
+        <button data-tab="messages" class="tab h-10 px-4 rounded-xl font-bold">الرسائل</button>
+      </nav>
+      <div class="flex flex-wrap gap-2 items-center">
+        <input id="fDate" type="date" class="h-10 rounded-xl border border-slate-200 px-2 bg-white text-sm">
+        <select id="fStatus" class="h-10 rounded-xl border border-slate-200 px-2 bg-white text-sm"></select>
+        <button id="refreshBtn" class="h-10 px-4 rounded-xl bg-brand-navy text-white font-bold text-sm">تحديث</button>
+      </div>
+    </div>
+    <p id="listError" class="hidden mt-4 text-sm text-red-600 bg-red-50 rounded-xl p-3"></p>
+    <div id="list" class="mt-4 space-y-3"></div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="assets/js/config.js?v=4"></script>
+<script src="assets/js/data.js?v=4"></script>
+<script>
+'use strict';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cfg = window.RAHEEM_DB || {};
+const show = id => ['notConfigured', 'loginView', 'dashView'].forEach(v => $('#' + v).classList.toggle('hidden', v !== id));
+
+const STATUS = {
+  bookings: { pending: 'بانتظار التأكيد', confirmed: 'مؤكد', done: 'تم', cancelled: 'ملغى' },
+  orders: { new: 'جديد', preparing: 'قيد التجهيز', ready: 'جاهز', delivered: 'تم التسليم', cancelled: 'ملغى' },
+  messages: { false: 'غير مقروءة', true: 'تمت المعالجة' }
+};
+const ST_CLS = { pending: 'bg-tang/15 text-tang', confirmed: 'bg-brand/10 text-brand', done: 'bg-leaf/15 text-leaf', cancelled: 'bg-slate-100 text-slate-500',
+  new: 'bg-tang/15 text-tang', preparing: 'bg-sun/30 text-amber-700', ready: 'bg-brand/10 text-brand', delivered: 'bg-leaf/15 text-leaf', false: 'bg-tang/15 text-tang', true: 'bg-leaf/15 text-leaf' };
+const PET = { cat: 'قط', dog: 'كلب', bird: 'طائر', other: 'أخرى' };
+const svcName = id => (SERVICES.find(s => s.id === id) || { ar: { title: id } }).ar.title;
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const fmtDT = s => new Date(s).toLocaleString('ar-JO-u-nu-latn', { dateStyle: 'medium', timeStyle: 'short' });
+const fmtDate = s => new Date(s + 'T00:00').toLocaleDateString('ar-JO-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' });
+const fmtTime = s => { const [h, m] = s.split(':').map(Number); return new Date(2000, 0, 1, h, m).toLocaleTimeString('ar-JO-u-nu-latn', { hour: 'numeric', minute: '2-digit' }); };
+const wa = p => 'https://wa.me/' + String(p).replace(/^\+/, '').replace(/^0/, '962');
+
+let sb = null, tab = 'bookings';
+
+if (!cfg.url || !cfg.anonKey || !window.supabase) show('notConfigured');
+else {
+  sb = window.supabase.createClient(cfg.url, cfg.anonKey);
+  sb.auth.getSession().then(({ data }) => data.session ? enter(data.session) : show('loginView'));
+}
+
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const { data, error } = await sb.auth.signInWithPassword({ email: $('#email').value.trim(), password: $('#password').value });
+  if (error) { $('#loginError').textContent = 'بيانات الدخول غير صحيحة.'; $('#loginError').classList.remove('hidden'); return; }
+  $('#password').value = '';
+  enter(data.session);
+});
+$('#logoutBtn').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
+
+async function enter(session) {
+  const { data: staff } = await sb.rpc('is_staff');
+  $('#userBox').classList.replace('hidden', 'flex');
+  $('#userEmail').textContent = session.user.email;
+  if (!staff) {
+    show('loginView');
+    $('#loginForm').classList.add('hidden');
+    $('#loginView').insertAdjacentHTML('beforeend', '<p class="mt-3 text-sm text-red-600">هذا الحساب ليس ضمن موظفي العيادة. أضفه إلى جدول staff (راجع README).</p>');
+    return;
+  }
+  show('dashView');
+  setTab('bookings');
+  setInterval(() => { load(); stats(); }, 60000);
+}
+
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('.tab').forEach(b => b.className = `tab h-10 px-4 rounded-xl font-bold ${b.dataset.tab === t ? 'bg-brand text-white' : 'bg-white text-slate-600'}`);
+  $('#fDate').classList.toggle('hidden', t !== 'bookings');
+  const opts = Object.entries(STATUS[t]).map(([k, v]) => `<option value="${k}">${v}</option>`).join('');
+  $('#fStatus').innerHTML = `<option value="">كل الحالات</option>` + (t === 'bookings' ? '<option value="active" selected>القادمة (غير ملغاة)</option>' : '') + opts;
+  load(); stats();
+}
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+$('#refreshBtn').addEventListener('click', () => { load(); stats(); });
+$('#fDate').addEventListener('change', load);
+$('#fStatus').addEventListener('change', load);
+
+async function stats() {
+  const t0 = todayISO();
+  const c = async (q) => { const { count } = await q; return count || 0; };
+  $('#stToday').textContent = await c(sb.from('bookings').select('id', { count: 'exact', head: true }).eq('booking_date', t0).neq('status', 'cancelled'));
+  $('#stPending').textContent = await c(sb.from('bookings').select('id', { count: 'exact', head: true }).eq('status', 'pending').gte('booking_date', t0));
+  $('#stOrders').textContent = await c(sb.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'new'));
+  $('#stMsgs').textContent = await c(sb.from('messages').select('id', { count: 'exact', head: true }).eq('handled', false));
+}
+
+async function load() {
+  const st = $('#fStatus').value; let q;
+  if (tab === 'bookings') {
+    q = sb.from('bookings').select('*').order('booking_date').order('booking_time');
+    if ($('#fDate').value) q = q.eq('booking_date', $('#fDate').value);
+    else if (st === 'active' || st === '') q = q.gte('booking_date', todayISO());
+    if (st === 'active') q = q.neq('status', 'cancelled'); else if (st) q = q.eq('status', st);
+  } else if (tab === 'orders') {
+    q = sb.from('orders').select('*').order('created_at', { ascending: false }).limit(200);
+    if (st) q = q.eq('status', st);
+  } else {
+    q = sb.from('messages').select('*').order('created_at', { ascending: false }).limit(200);
+    if (st) q = q.eq('handled', st === 'true');
+  }
+  const { data, error } = await q;
+  $('#listError').classList.toggle('hidden', !error);
+  if (error) { $('#listError').textContent = 'تعذّر تحميل البيانات: ' + error.message; return; }
+  $('#list').innerHTML = data.length ? data.map(row[tab]).join('') : '<p class="text-center text-slate-500 py-10">لا توجد بيانات.</p>';
+}
+
+const select = (table, id, field, current) => `<select data-upd="${table}" data-id="${id}" data-field="${field}" class="h-9 rounded-lg border border-slate-200 px-2 bg-white text-sm">${Object.entries(STATUS[table]).map(([k, v]) => `<option value="${k}" ${String(current) === k ? 'selected' : ''}>${v}</option>`).join('')}</select>`;
+const contact = p => `<a href="tel:${esc(p)}" class="h-9 px-3 rounded-lg bg-brand/10 text-brand font-bold text-sm grid place-items-center" dir="ltr">${esc(p)}</a><a href="${wa(p)}" target="_blank" rel="noopener" class="h-9 px-3 rounded-lg bg-[#25D366] text-white font-bold text-sm grid place-items-center">واتساب</a>`;
+
+const row = {
+  bookings: b => `<article class="bg-white rounded-2xl p-4 shadow-sm flex flex-wrap gap-4 items-center">
+    <div class="w-36"><b class="block text-brand-navy">${fmtTime(b.booking_time)}</b><span class="text-xs text-slate-500">${fmtDate(b.booking_date)}</span></div>
+    <div class="flex-1 min-w-[200px]"><b class="text-brand-navy">${esc(svcName(b.service))}</b> <span class="text-xs text-slate-400" dir="ltr">${esc(b.ref)}</span>
+      <div class="text-sm text-slate-600">${esc(b.owner_name)} · ${PET[b.pet_type] || ''}${b.pet_name ? ' (' + esc(b.pet_name) + ')' : ''}</div>
+      ${b.notes ? `<div class="text-sm text-slate-500 mt-1">📝 ${esc(b.notes)}</div>` : ''}</div>
+    <div class="flex flex-wrap gap-2 items-center"><span class="rounded-full px-2.5 py-1 text-xs font-bold ${ST_CLS[b.status]}">${STATUS.bookings[b.status]}</span>${select('bookings', b.id, 'status', b.status)}${contact(b.phone)}</div></article>`,
+  orders: o => `<article class="bg-white rounded-2xl p-4 shadow-sm">
+    <div class="flex flex-wrap gap-3 justify-between items-center"><div><b class="text-brand-navy">${esc(o.customer_name)}</b> <span class="text-xs text-slate-400" dir="ltr">${esc(o.ref)}</span>
+      <div class="text-xs text-slate-500">${fmtDT(o.created_at)} · ${o.method === 'delivery' ? 'توصيل: ' + esc(o.area || '') + ' — ' + esc(o.address || '') : 'استلام من العيادة'}</div></div>
+      <div class="flex flex-wrap gap-2 items-center"><b class="text-brand">${Number(o.total).toFixed(2)} د.أ</b><span class="rounded-full px-2.5 py-1 text-xs font-bold ${ST_CLS[o.status]}">${STATUS.orders[o.status]}</span>${select('orders', o.id, 'status', o.status)}${contact(o.phone)}</div></div>
+    <ul class="mt-3 text-sm text-slate-600 space-y-1">${(o.items || []).map(i => `<li>• ${esc(i.name)} × ${i.qty} = ${(i.qty * i.price).toFixed(2)} د.أ</li>`).join('')}</ul></article>`,
+  messages: m => `<article class="bg-white rounded-2xl p-4 shadow-sm">
+    <div class="flex flex-wrap gap-3 justify-between items-center"><div><b class="text-brand-navy">${esc(m.name)}</b><div class="text-xs text-slate-500">${fmtDT(m.created_at)}</div></div>
+      <div class="flex flex-wrap gap-2 items-center">${select('messages', m.id, 'handled', m.handled)}${contact(m.phone)}</div></div>
+    <p class="mt-2 text-slate-700 whitespace-pre-line">${esc(m.message)}</p></article>`
+};
+
+document.addEventListener('change', async e => {
+  const s = e.target.closest('[data-upd]'); if (!s) return;
+  const val = s.dataset.field === 'handled' ? s.value === 'true' : s.value;
+  s.disabled = true;
+  const { error } = await sb.from(s.dataset.upd).update({ [s.dataset.field]: val }).eq('id', s.dataset.id);
+  s.disabled = false;
+  if (error) alert('تعذّر الحفظ: ' + error.message); else { load(); stats(); }
+});
+</script>
+</body>
+</html>
